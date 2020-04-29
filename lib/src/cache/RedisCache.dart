@@ -1,250 +1,182 @@
-//  @module cache 
-//  @hidden 
-// const _ = require('lodash');
-//  @hidden 
-// const async = require('async');
+import 'dart:async';
 
-// import { ConfigParams } from 'pip-services3-commons-node';
-// import { IConfigurable } from 'pip-services3-commons-node';
-// import { IReferences } from 'pip-services3-commons-node';
-// import { IReferenceable } from 'pip-services3-commons-node';
-// import { IOpenable } from 'pip-services3-commons-node';
-// import { InvalidStateException } from 'pip-services3-commons-node';
-// import { ConfigException } from 'pip-services3-commons-node';
-// import { ConnectionParams } from 'pip-services3-components-node';
-// import { ConnectionResolver } from 'pip-services3-components-node';
-// import { CredentialParams } from 'pip-services3-components-node';
-// import { CredentialResolver } from 'pip-services3-components-node';
-// import { ICache } from 'pip-services3-components-node';
+import 'package:redis/redis.dart' as redis;
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_components/pip_services3_components.dart';
 
-// 
-// ///Distributed cache that stores values in Redis in-memory database.
-// ///
-// ///### Configuration parameters ###
-// ///
-// ///- connection(s):           
-// ///  - discovery_key:         (optional) a key to retrieve the connection from [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]]
-// ///  - host:                  host name or IP address
-// ///  - port:                  port number
-// ///  - uri:                   resource URI or connection string with all parameters in it
-// ///- credential(s):
-// ///  - store_key:             key to retrieve parameters from credential store
-// ///  - username:              user name (currently is not used)
-// ///  - password:              user password
-// ///- options:
-// ///  - retries:               number of retries (default: 3)
-// ///  - timeout:               default caching timeout in milliseconds (default: 1 minute)
-// ///  - max_size:              maximum number of values stored in this cache (default: 1000)        
-// /// 
-// ///### References ###
-// ///
-// ///- \*:discovery:\*:\*:1.0        (optional) [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]] services to resolve connection
-// ///- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credential
-//  *
-// ///### Example ###
-// ///
-// ///    let cache = new RedisCache();
-// ///    cache.configure(ConfigParams.fromTuples(
-// ///      "host", "localhost",
-// ///      "port", 6379
-// ///    ));
-// ///
-// ///    cache.open("123", (err) => {
-// ///      ...
-// ///    });
-// ///
-// ///    cache.store("123", "key1", "ABC", (err) => {
-// ///         cache.store("123", "key1", (err, value) => {
-// ///             // Result: "ABC"
-// ///         });
-// ///    });
-//  
-// export class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
-//     private _connectionResolver: ConnectionResolver = new ConnectionResolver();
-//     private _credentialResolver: CredentialResolver = new CredentialResolver();
-    
-//     private _timeout: number = 30000;
-//     private _retries: number = 3;
+///Distributed cache that stores values in Redis in-memory database.
+///
+///### Configuration parameters ###
+///
+/// - [connection(s)]:
+///  - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery]
+///  - [host]:                  host name or IP address
+///  - [port]:                  port number
+///  - [uri]:                   resource URI or connection string with all parameters in it
+/// - [credential(s)]:
+///  - [store_key]:             key to retrieve parameters from credential store
+///  - [username]:              user name (currently is not used)
+///  - [password]:              user password
+/// - [options]:
+///  - [retries]:               number of retries (default: 3)
+///  - [timeout]:               default caching timeout in milliseconds (default: 1 minute)
+///  - [max_size]:              maximum number of values stored in this cache (default: 1000)
+///
+///### References ###
+///
+/// - *:discovery:*:*:1.0        (optional) [IDiscovery] services to resolve connection
+/// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential
 
-//     private _client: any = null;
+///### Example ###
+///
+///    var cache = RedisCache();
+///    cache.configure(ConfigParams.fromTuples([
+///      "host", "localhost",
+///      "port", 6379
+///    ]));
+///
+///   await cache.open("123");
+///      ...
+///
+///    await cache.store("123", "key1", "ABC");
+///    var value = await cache.store("123", "key1");
+///     // Result: "ABC"
 
-//     
-//     ///Creates a new instance of this cache.
-//      
-//     public constructor() {}
+class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
+  final _connectionResolver = ConnectionResolver();
+  final _credentialResolver = CredentialResolver();
 
-//     
-//     ///Configures component by passing configuration parameters.
-//     ///
-//     ///- config    configuration parameters to be set.
-//      
-//     public configure(config: ConfigParams): void {
-//         this._connectionResolver.configure(config);
-//         this._credentialResolver.configure(config);
+  int _timeout = 30000;
+  int _retries = 3;
 
-//         this._timeout = config.getAsIntegerWithDefault('options.timeout', this._timeout);
-//         this._retries = config.getAsIntegerWithDefault('options.retries', this._retries);
-//     }
+  redis.Command _client;
 
-//     
-// 	///Sets references to dependent components.
-// 	///
-// 	///- references 	references to locate the component dependencies. 
-//      
-//     public setReferences(references: IReferences): void {
-//         this._connectionResolver.setReferences(references);
-//         this._credentialResolver.setReferences(references);
-//     }
+  ///Creates a new instance of this cache.
 
-//     
-// 	///Checks if the component is opened.
-// 	///
-// 	///Returns true if the component has been opened and false otherwise.
-//      
-//     public isOpen(): boolean {
-//         return this._client;
-//     }
+  RedisCache();
 
-//     
-// 	///Opens the component.
-// 	///
-// 	///- correlationId 	(optional) transaction id to trace execution through call chain.
-//     ///- callback 			callback function that receives error or null no errors occured.
-//      
-//     public open(correlationId: string, callback: (err: any) => void): void {
-//         let connection: ConnectionParams;
-//         let credential: CredentialParams;
+  ///Configures component by passing configuration parameters.
+  ///
+  /// - [config]    configuration parameters to be set.
+  @override
+  void configure(ConfigParams config) {
+    _connectionResolver.configure(config);
+    _credentialResolver.configure(config);
 
-//         async.series([
-//             (callback) => {
-//                 this._connectionResolver.resolve(correlationId, (err, result) => {
-//                     connection = result;
-//                     if (err == null && connection == null)
-//                         err = new ConfigException(correlationId, 'NO_CONNECTION', 'Connection is not configured');
-//                     callback(err);
-//                 });
-//             },
-//             (callback) => {
-//                 this._credentialResolver.lookup(correlationId, (err, result) => {
-//                     credential = result;
-//                     callback(err);
-//                 });
-//             },
-//             (callback) => {
-//                 let options: any = {
-//                     // connect_timeout: this._timeout,
-//                     // max_attempts: this._retries,
-//                     retry_strategy: (options) => { return this.retryStrategy(options); }
-//                 };
-                
-//                 if (connection.getUri() != null) {
-//                     options.url = connection.getUri();
-//                 } else {                    
-//                     options.host = connection.getHost() || 'localhost';
-//                     options.port = connection.getPort() || 6379;
-//                 }
+    _timeout = config.getAsIntegerWithDefault('options.timeout', _timeout);
+    _retries = config.getAsIntegerWithDefault('options.retries', _retries);
+  }
 
-//                 if (credential != null) {
-//                     options.password = credential.getPassword();
-//                 }
-    
-//                 let redis = require('redis');
-//                 this._client = redis.createClient(options);
-    
-//                 if (callback) callback(null);    
-//             }
-//         ], callback);
-//     }
+  ///Sets references to dependent components.
+  ///
+  /// - [references] 	references to locate the component dependencies.
+  @override
+  void setReferences(IReferences references) {
+    _connectionResolver.setReferences(references);
+    _credentialResolver.setReferences(references);
+  }
 
-//     
-// 	///Closes component and frees used resources.
-// 	///
-// 	///- correlationId 	(optional) transaction id to trace execution through call chain.
-//     ///- callback 			callback function that receives error or null no errors occured.
-//      
-//     public close(correlationId: string, callback: (err: any) => void): void {
-//         if (this._client != null) {
-//             this._client.quit(((err) => {
-//                 this._client = null;    
-//                 if (callback) callback(err);
-//             }));
-//         } else {
-//             if (callback) callback(null);
-//         }
-//     }
+  ///Checks if the component is opened.
+  ///
+  ///Returns true if the component has been opened and false otherwise.
+  @override
+  bool isOpen() {
+    return _client != null;
+  }
 
-//     private checkOpened(correlationId: string, callback: any): boolean {
-//         if (!this.isOpen()) {
-//             let err = new InvalidStateException(correlationId, 'NOT_OPENED', 'Connection is not opened');
-//             callback(err, null);
-//             return false;
-//         }
-        
-//         return true;
-//     }
-    
-//     private retryStrategy(options: any): any {
-//         if (options.error && options.error.code === 'ECONNREFUSED') {
-//             // End reconnecting on a specific error and flush all commands with
-//             // a individual error
-//             return new Error('The server refused the connection');
-//         }
-//         if (options.total_retry_time > this._timeout) {
-//             // End reconnecting after a specific timeout and flush all commands
-//             // with a individual error
-//             return new Error('Retry time exhausted');
-//         }
-//         if (options.attempt > this._retries) {
-//             // End reconnecting with built in error
-//             return undefined;
-//         }
-//         // reconnect after
-//         return Math.min(options.attempt///100, 3000);
-//     }
+  ///Opens the component.
+  ///
+  /// - [correlationId] 	(optional) transaction id to trace execution through call chain.
+  /// Return 			Future that receives null no errors occured.
+  /// Throws error
+  @override
+  Future open(String correlationId) async {
+    ConnectionParams connection;
+    //CredentialParams credential;
 
-//     
-//     ///Retrieves cached value from the cache using its key.
-//     ///If value is missing in the cache or expired it returns null.
-//     ///
-//     ///- correlationId     (optional) transaction id to trace execution through call chain.
-//     ///- key               a unique value key.
-//     ///- callback          callback function that receives cached value or error.
-//      
-//     public retrieve(correlationId: string, key: string,
-//         callback: (err: any, value: any) => void): void {
-//         if (!this.checkOpened(correlationId, callback)) return;
+    connection = await _connectionResolver.resolve(correlationId);
+    if (connection == null) {
+      throw ConfigException(
+          correlationId, 'NO_CONNECTION', 'Connection is not configured');
+    }
+    //credential = await _credentialResolver.lookup(correlationId);
 
-//         this._client.get(key, callback);
-//     }
+    var redisConn = redis.RedisConnection();
 
-//     
-//     ///Stores value in the cache with expiration time.
-//     ///
-//     ///- correlationId     (optional) transaction id to trace execution through call chain.
-//     ///- key               a unique value key.
-//     ///- value             a value to store.
-//     ///- timeout           expiration timeout in milliseconds.
-//     ///- callback          (optional) callback function that receives an error or null for success
-//      
-//     public store(correlationId: string, key: string, value: any, timeout: number,
-//         callback: (err: any) => void): void {
-//         if (!this.checkOpened(correlationId, callback)) return;
+    //TODO: Fix work with uri connection string and credentials
+    // if (connection.getUri() != null) {
+    //   var url = connection.getUri();
+    // } else {
+    var host = connection.getHost() ?? 'localhost';
+    var port = connection.getPort() ?? 6379;
+    _client = await redisConn.connect(host, port);
+    // }
 
-//         this._client.set(key, value, 'PX', timeout, callback);
-//     }
+    // if (credential != null) {
+    //   var password = credential.getPassword();
+    // }
+  }
 
-//     
-//     ///Removes a value from the cache by its key.
-//     ///
-//     ///- correlationId     (optional) transaction id to trace execution through call chain.
-//     ///- key               a unique value key.
-//     ///- callback          (optional) callback function that receives an error or null for success
-//      
-//     public remove(correlationId: string, key: string,
-//         callback: (err: any) => void) {
-//         if (!this.checkOpened(correlationId, callback)) return;
+  ///Closes component and frees used resources.
+  ///
+  /// - [correlationId] 	(optional) transaction id to trace execution through call chain.
+  /// Return 			Future that receives null no errors occured.
+  /// Throws error
+  @override
+  Future close(String correlationId) async {
+    if (_client != null) {
+      await _client.get_connection().close();
+      _client = null;
+    }
+  }
 
-//         this._client.del(key, callback);
-//     }
-    
-// }
+  bool _checkOpened(String correlationId) {
+    if (!isOpen()) {
+      throw InvalidStateException(
+          correlationId, 'NOT_OPENED', 'Connection is not opened');
+      //return false;
+    }
+    return true;
+  }
+
+  ///Retrieves cached value from the cache using its key.
+  ///If value is missing in the cache or expired it returns null.
+  ///
+  /// - [correlationId]     (optional) transaction id to trace execution through call chain.
+  /// - [key]               a unique value key.
+  /// Return                Future that receives cached value.
+  /// Throws error
+  @override
+  Future retrieve(String correlationId, String key) async {
+    if (!_checkOpened(correlationId)) return;
+    return _client.get(key);
+  }
+
+  ///Stores value in the cache with expiration time.
+  ///
+  /// - [correlationId]     (optional) transaction id to trace execution through call chain.
+  /// - [key]               a unique value key.
+  /// - [value]             a value to store.
+  /// - [timeout]           expiration timeout in milliseconds.
+  /// Return                Future that receives an null for success
+  /// Throws error
+  @override
+  Future<dynamic> store(
+      String correlationId, String key, value, int timeout) async {
+    if (!_checkOpened(correlationId)) return;
+    //return _client.set(key, value, 'PX', timeout);
+    return _client.send_object(['SET', key, value, 'PX', timeout]);
+  }
+
+  ///Removes a value from the cache by its key.
+  ///
+  /// - [correlationId]     (optional) transaction id to trace execution through call chain.
+  /// - [key]               a unique value key.
+  /// Return                Future function that receives an error or null for success
+  @override
+  Future<dynamic> remove(String correlationId, String key) async {
+    if (!_checkOpened(correlationId)) return;
+    //return _client.del(key);
+    return _client.send_object(['DEL', key]);
+  }
+}

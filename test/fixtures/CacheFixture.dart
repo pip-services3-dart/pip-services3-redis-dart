@@ -1,7 +1,7 @@
 // let assert = require('chai').assert;
 // let async = require('async');
 
-// import { ICache } from 'pip-services3-components-node';
+// import { ICache } from 'package:pip_services3_components-node';
 
 // let KEY1: string = "key1";
 // let KEY2: string = "key2";

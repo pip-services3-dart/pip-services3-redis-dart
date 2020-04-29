@@ -2,8 +2,8 @@
 // let assert = require('chai').assert;
 // let async = require('async');
 
-// import { Descriptor } from 'pip-services3-commons-node';
-// import { ConfigParams } from 'pip-services3-commons-node';
+// import { Descriptor } from 'package:pip_services3_commons-node';
+// import { ConfigParams } from 'package:pip_services3_commons-node';
 
 // import { RedisCache } from '../../src/cache/RedisCache';
 // import { CacheFixture } from '../fixtures/CacheFixture';

@@ -1,7 +1,7 @@
 // let async = require('async');
 // let assert = require('chai').assert;
 
-// import { ILock } from 'pip-services3-components-node';
+// import { ILock } from 'package:pip_services3_components-node';
 
 // let LOCK1: string = "lock_1";
 // let LOCK2: string = "lock_2";
