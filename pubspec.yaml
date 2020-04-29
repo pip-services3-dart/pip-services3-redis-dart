@@ -1,7 +1,7 @@
-name: pip_services3_prometheus
+name: pip_services3_redis
 version: 1.0.0
 author: Sergey Seroukhov <seroukhov@gmail.com>
-description: This framework is part of the [Pip.Services](https://github.com/pip-services/pip-services) project. It contains the following Prometheus components.
+description: This framework is part of the [Pip.Services](https://github.com/pip-services/pip-services) project. It contains Redis components RedisCache and RedisLock
 homepage: https://github.com/pip-services3-dart/pip-services3-prometheus-dart
 
 environment:

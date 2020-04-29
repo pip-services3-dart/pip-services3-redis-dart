@@ -30,19 +30,19 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///
 ///    var lock = RedisLock();
 ///    lock.configure(ConfigParams.fromTuples([
-///      "host", "localhost",
-///      "port", 6379
+///      'host', 'localhost',
+///      'port', 6379
 ///    ]));
 ///
-///    await lock.open("123");
+///    await lock.open('123');
 ///      ...
 ///
-///    await lock.acquire("123", "key1");
+///    await lock.acquire('123', 'key1');
 ///
 ///    try {
 ///        // Processing...
 ///    } finally {
-///       await lock.releaseLock("123", "key1");
+///       await lock.releaseLock('123', 'key1');
 ///        // Continue...
 ///    }
 
@@ -167,16 +167,22 @@ class RedisLock extends Lock
     if (!_checkOpened(correlationId)) return;
 
     // Start transaction on key
-    var cas = redis.Cas(_client);
+    await _client.send_object(['WATCH', key]);
 
-    await cas.watch([key], () async {
-      var result = await _client.get(key);
-      if (result == _lock) {
-        return cas.multiAndExec((trans) {
-          return trans.send_object(['DEL', key]);
-        });
-      }
+    // Read and check if lock is the same
+    var keyId = await _client.send_object(['GET', key]);
+
+    if (keyId == null) {
+      await _client.send_object(['UNWATCH']);
+    }
+    // Remove the lock if it matches
+    if (keyId == _lock) {
+      await _client.send_object(['MULTI']);
+      await _client.send_object(['DEL', key]);
+      await _client.send_object(['EXEC']);
+    } else {
       // Cancel transaction if it doesn't match
-    });
+      await _client.send_object(['UNWATCH']);
+    }
   }
 }

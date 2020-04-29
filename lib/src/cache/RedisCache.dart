@@ -39,7 +39,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///      ...
 ///
 ///    await cache.store("123", "key1", "ABC");
-///    var value = await cache.store("123", "key1");
+///    var value = await cache.retrieve("123", "key1");
 ///     // Result: "ABC"
 
 class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
@@ -52,7 +52,6 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   redis.Command _client;
 
   ///Creates a new instance of this cache.
-
   RedisCache();
 
   ///Configures component by passing configuration parameters.
@@ -110,6 +109,7 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
     var host = connection.getHost() ?? 'localhost';
     var port = connection.getPort() ?? 6379;
     _client = await redisConn.connect(host, port);
+
     // }
 
     // if (credential != null) {
@@ -134,7 +134,6 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
     if (!isOpen()) {
       throw InvalidStateException(
           correlationId, 'NOT_OPENED', 'Connection is not opened');
-      //return false;
     }
     return true;
   }
@@ -149,7 +148,7 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   @override
   Future retrieve(String correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
-    return _client.get(key);
+    return await _client.get(key);
   }
 
   ///Stores value in the cache with expiration time.
@@ -158,14 +157,13 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// - [key]               a unique value key.
   /// - [value]             a value to store.
   /// - [timeout]           expiration timeout in milliseconds.
-  /// Return                Future that receives an null for success
+  /// Return                Future that receives an 'OK' for success
   /// Throws error
   @override
   Future<dynamic> store(
       String correlationId, String key, value, int timeout) async {
     if (!_checkOpened(correlationId)) return;
-    //return _client.set(key, value, 'PX', timeout);
-    return _client.send_object(['SET', key, value, 'PX', timeout]);
+    return await _client.send_object(['SET', key, value, 'PX', timeout]);
   }
 
   ///Removes a value from the cache by its key.
@@ -176,7 +174,6 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   @override
   Future<dynamic> remove(String correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
-    //return _client.del(key);
-    return _client.send_object(['DEL', key]);
+    return await _client.send_object(['DEL', key]);
   }
 }
