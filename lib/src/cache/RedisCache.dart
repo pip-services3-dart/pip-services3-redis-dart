@@ -120,7 +120,7 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   ///Closes component and frees used resources.
   ///
   /// - [correlationId] 	(optional) transaction id to trace execution through call chain.
-  /// Return 			Future that receives null no errors occured.
+  /// Return 			Future that receives null if no errors occured.
   /// Throws error
   @override
   Future close(String correlationId) async {
@@ -146,7 +146,7 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Return                Future that receives cached value.
   /// Throws error
   @override
-  Future retrieve(String correlationId, String key) async {
+  Future<dynamic> retrieve(String correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
     return await _client.get(key);
   }
@@ -170,7 +170,8 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   ///
   /// - [correlationId]     (optional) transaction id to trace execution through call chain.
   /// - [key]               a unique value key.
-  /// Return                Future function that receives an error or null for success
+  /// Return                Future function that receives an null for success
+  /// Throws error
   @override
   Future<dynamic> remove(String correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;

@@ -6,9 +6,8 @@ import '../lock/RedisLock.dart';
 
 ///Creates Redis components by their descriptors.
 ///
-///See [[RedisCache]]
-///See [[RedisLock]]
-
+///See [RedisCache]
+///See [RedisLock]
 class DefaultRedisFactory extends Factory {
   static final descriptor =
       Descriptor('pip-services', 'factory', 'redis', 'default', '1.0');

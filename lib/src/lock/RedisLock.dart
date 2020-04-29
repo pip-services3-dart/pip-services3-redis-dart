@@ -70,7 +70,7 @@ class RedisLock extends Lock
 
   ///Sets references to dependent components.
   ///
-  /// - references 	references to locate the component dependencies.
+  /// - [references] 	references to locate the component dependencies.
   @override
   void setReferences(IReferences references) {
     _connectionResolver.setReferences(references);
@@ -88,7 +88,7 @@ class RedisLock extends Lock
   ///Opens the component.
   ///
   /// - [correlationId] 	(optional) transaction id to trace execution through call chain.
-  /// Return 			Future that receives null no errors occured.
+  /// Return 			Future that receives an null no errors occured.
   /// Throws error
   @override
   Future open(String correlationId) async {
@@ -121,7 +121,7 @@ class RedisLock extends Lock
   ///Closes component and frees used resources.
   ///
   /// - [correlationId] 	(optional) transaction id to trace execution through call chain.
-  /// Return 			Future that receives null no errors occured.
+  /// Return 			Future that receives an null no errors occured.
   /// Throws error
   @override
   Future close(String correlationId) async {
@@ -135,7 +135,6 @@ class RedisLock extends Lock
     if (!isOpen()) {
       throw InvalidStateException(
           correlationId, 'NOT_OPENED', 'Connection is not opened');
-      //return false;
     }
     return true;
   }
@@ -160,7 +159,7 @@ class RedisLock extends Lock
   ///
   /// - [correlationId]     (optional) transaction id to trace execution through call chain.
   /// - [key]               a unique lock key to release.
-  /// Return          future that receives null for success.
+  /// Return          Future that receives an null for success.
   /// Throws error
   @override
   Future releaseLock(String correlationId, String key) async {

@@ -1,6 +1,6 @@
 {
     "name": "pip-services-redis",
     "registry": "pipdevs",
-    "version": "3.0.2",
+    "version": "1.0.0",
     "build": "0"
 }

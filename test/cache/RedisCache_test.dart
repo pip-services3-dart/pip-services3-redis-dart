@@ -31,7 +31,7 @@ void main() {
       );
     });
 
-    test('Store and Retrieve', ()async {
+    test('Store and Retrieve', () async {
       await _fixture.testStoreAndRetrieve();
     });
 

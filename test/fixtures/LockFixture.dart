@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:test/test.dart';
 import 'package:pip_services3_components/pip_services3_components.dart';
 
@@ -36,11 +35,13 @@ class LockFixture {
     // Acquire lock for the first time
     await _lock.acquireLock('123', LOCK2, 3000, 1000);
     // Acquire lock for the second time
+    var err;
     try {
       await _lock.acquireLock('123', LOCK2, 3000, 1000);
-    } catch (err) {
-      expect(err, isNotNull);
+    } catch (ex) {
+      err = ex;
     }
+    expect(err, isNotNull);
 
     // Release the lock
     await _lock.releaseLock('123', LOCK2);
