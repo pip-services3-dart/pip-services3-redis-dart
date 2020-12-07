@@ -9,7 +9,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///### Configuration parameters ###
 ///
 /// - [connection(s)]:
-///  - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery]
+///  - [discovery_key]:         (optional) a key to retrieve the connection from [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html)
 ///  - [host]:                  host name or IP address
 ///  - [port]:                  port number
 ///  - [uri]:                   resource URI or connection string with all parameters in it
@@ -24,7 +24,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///
 ///### References ###
 ///
-/// - *:discovery:*:*:1.0        (optional) [IDiscovery] services to resolve connection
+/// - *:discovery:*:*:1.0        (optional) [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html) services to resolve connection
 /// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential
 
 ///### Example ###
