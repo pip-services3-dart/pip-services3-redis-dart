@@ -24,10 +24,10 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///### References ###
 ///
 /// - *:discovery:*:*:1.0        (optional) [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html) services to resolve connection
-/// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential
-
-///### Example ###
+/// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential [ICredentialStore](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/ICredentialStore-class.html)
 ///
+///### Example ###
+///```dart
 ///    var lock = RedisLock();
 ///    lock.configure(ConfigParams.fromTuples([
 ///      'host', 'localhost',
@@ -45,7 +45,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///       await lock.releaseLock('123', 'key1');
 ///        // Continue...
 ///    }
-
+///```
 class RedisLock extends Lock
     implements IConfigurable, IReferenceable, IOpenable {
   final _connectionResolver = ConnectionResolver();

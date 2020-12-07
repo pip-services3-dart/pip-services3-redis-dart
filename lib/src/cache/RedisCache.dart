@@ -25,10 +25,10 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///### References ###
 ///
 /// - *:discovery:*:*:1.0        (optional) [IDiscovery](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/IDiscovery-class.html) services to resolve connection
-/// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential
-
-///### Example ###
+/// - *:credential-store:*:*:1.0 (optional) Credential stores to resolve credential [ICredentialStore](https://pub.dev/documentation/pip_services3_components/latest/pip_services3_components/ICredentialStore-class.html)
 ///
+///### Example ###
+///```dart
 ///    var cache = RedisCache();
 ///    cache.configure(ConfigParams.fromTuples([
 ///      "host", "localhost",
@@ -41,7 +41,7 @@ import 'package:pip_services3_components/pip_services3_components.dart';
 ///    await cache.store("123", "key1", "ABC");
 ///    var value = await cache.retrieve("123", "key1");
 ///     // Result: "ABC"
-
+///```
 class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   final _connectionResolver = ConnectionResolver();
   final _credentialResolver = CredentialResolver();
