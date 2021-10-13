@@ -9,13 +9,11 @@ final VALUE1 = 'value1';
 final VALUE2 = 'value2';
 
 class CacheFixture {
-  ICache _cache;
+  final ICache _cache;
 
-  CacheFixture(ICache cache) {
-    _cache = cache;
-  }
+  CacheFixture(ICache cache) : _cache = cache;
 
-  void testStoreAndRetrieve() async {
+  Future testStoreAndRetrieve() async {
     await _cache.store('123', KEY1, VALUE1, 5000);
 
     await _cache.store('123', KEY2, VALUE2, 5000);
@@ -31,7 +29,7 @@ class CacheFixture {
     expect(VALUE2, val);
   }
 
-  void testRetrieveExpired() async {
+  Future testRetrieveExpired() async {
     await _cache.store('123', KEY1, VALUE1, 1000);
 
     await Future.delayed(Duration(milliseconds: 1500));
@@ -40,7 +38,7 @@ class CacheFixture {
     expect(val, isNull);
   }
 
-  void testRemove() async {
+  Future testRemove() async {
     await _cache.store('123', KEY1, VALUE1, 1000);
 
     await _cache.remove('123', KEY1);

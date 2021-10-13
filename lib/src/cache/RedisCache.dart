@@ -49,7 +49,7 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   int _timeout = 30000;
   int _retries = 3;
 
-  redis.Command _client;
+  redis.Command? _client;
 
   ///Creates a new instance of this cache.
   RedisCache();
@@ -89,11 +89,8 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Return 			Future that receives null no errors occured.
   /// Throws error
   @override
-  Future open(String correlationId) async {
-    ConnectionParams connection;
-    //CredentialParams credential;
-
-    connection = await _connectionResolver.resolve(correlationId);
+  Future open(String? correlationId) async {
+    var connection = await _connectionResolver.resolve(correlationId);
     if (connection == null) {
       throw ConfigException(
           correlationId, 'NO_CONNECTION', 'Connection is not configured');
@@ -123,14 +120,14 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Return 			Future that receives null if no errors occured.
   /// Throws error
   @override
-  Future close(String correlationId) async {
+  Future close(String? correlationId) async {
     if (_client != null) {
-      await _client.get_connection().close();
+      await _client!.get_connection().close();
       _client = null;
     }
   }
 
-  bool _checkOpened(String correlationId) {
+  bool _checkOpened(String? correlationId) {
     if (!isOpen()) {
       throw InvalidStateException(
           correlationId, 'NOT_OPENED', 'Connection is not opened');
@@ -146,9 +143,9 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Return                Future that receives cached value.
   /// Throws error
   @override
-  Future<dynamic> retrieve(String correlationId, String key) async {
+  Future<dynamic> retrieve(String? correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
-    return await _client.get(key);
+    return await _client!.get(key);
   }
 
   ///Stores value in the cache with expiration time.
@@ -161,9 +158,9 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Throws error
   @override
   Future<dynamic> store(
-      String correlationId, String key, value, int timeout) async {
+      String? correlationId, String key, value, int timeout) async {
     if (!_checkOpened(correlationId)) return;
-    return await _client.send_object(['SET', key, value, 'PX', timeout]);
+    return await _client!.send_object(['SET', key, value, 'PX', timeout]);
   }
 
   ///Removes a value from the cache by its key.
@@ -173,8 +170,8 @@ class RedisCache implements ICache, IConfigurable, IReferenceable, IOpenable {
   /// Return                Future function that receives an null for success
   /// Throws error
   @override
-  Future<dynamic> remove(String correlationId, String key) async {
+  Future<dynamic> remove(String? correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
-    return await _client.send_object(['DEL', key]);
+    return await _client!.send_object(['DEL', key]);
   }
 }

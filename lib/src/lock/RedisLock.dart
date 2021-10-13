@@ -55,7 +55,7 @@ class RedisLock extends Lock
   int _timeout = 30000;
   int _retries = 3;
 
-  redis.Command _client;
+  redis.Command? _client;
 
   ///Configures component by passing configuration parameters.
   ///
@@ -91,11 +91,8 @@ class RedisLock extends Lock
   /// Return 			Future that receives an null no errors occured.
   /// Throws error
   @override
-  Future open(String correlationId) async {
-    ConnectionParams connection;
-    //CredentialParams credential;
-
-    connection = await _connectionResolver.resolve(correlationId);
+  Future open(String? correlationId) async {
+    var connection = await _connectionResolver.resolve(correlationId);
     if (connection == null) {
       throw ConfigException(
           correlationId, 'NO_CONNECTION', 'Connection is not configured');
@@ -124,14 +121,14 @@ class RedisLock extends Lock
   /// Return 			Future that receives an null no errors occured.
   /// Throws error
   @override
-  Future close(String correlationId) async {
+  Future close(String? correlationId) async {
     if (_client != null) {
-      await _client.get_connection().close();
+      await _client!.get_connection().close();
       _client = null;
     }
   }
 
-  bool _checkOpened(String correlationId) {
+  bool _checkOpened(String? correlationId) {
     if (!isOpen()) {
       throw InvalidStateException(
           correlationId, 'NOT_OPENED', 'Connection is not opened');
@@ -148,10 +145,11 @@ class RedisLock extends Lock
   /// Return                Future that receives a lock result
   /// Throws error.
   @override
-  Future<bool> tryAcquireLock(String correlationId, String key, int ttl) async {
+  Future<bool> tryAcquireLock(
+      String? correlationId, String key, int ttl) async {
     if (!_checkOpened(correlationId)) return false;
     var result =
-        await _client.send_object(['SET', key, _lock, 'NX', 'PX', ttl]);
+        await _client!.send_object(['SET', key, _lock, 'NX', 'PX', ttl]);
     return result == 'OK';
   }
 
@@ -162,26 +160,26 @@ class RedisLock extends Lock
   /// Return          Future that receives an null for success.
   /// Throws error
   @override
-  Future releaseLock(String correlationId, String key) async {
+  Future releaseLock(String? correlationId, String key) async {
     if (!_checkOpened(correlationId)) return;
 
     // Start transaction on key
-    await _client.send_object(['WATCH', key]);
+    await _client!.send_object(['WATCH', key]);
 
     // Read and check if lock is the same
-    var keyId = await _client.send_object(['GET', key]);
+    var keyId = await _client!.send_object(['GET', key]);
 
     if (keyId == null) {
-      await _client.send_object(['UNWATCH']);
+      await _client!.send_object(['UNWATCH']);
     }
     // Remove the lock if it matches
     if (keyId == _lock) {
-      await _client.send_object(['MULTI']);
-      await _client.send_object(['DEL', key]);
-      await _client.send_object(['EXEC']);
+      await _client!.send_object(['MULTI']);
+      await _client!.send_object(['DEL', key]);
+      await _client!.send_object(['EXEC']);
     } else {
       // Cancel transaction if it doesn't match
-      await _client.send_object(['UNWATCH']);
+      await _client!.send_object(['UNWATCH']);
     }
   }
 }

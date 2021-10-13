@@ -20,7 +20,8 @@ void main() async {
   await _lock.open(null);
 
   // Try to acquire lock for the first time
-  var result = await _lock.tryAcquireLock('123', LOCK1, 3000); // true
+  var result = await _lock.tryAcquireLock('123', LOCK1, 3000);
+  print(result); // true
 
   // Try to acquire lock for the second time
   result = await _lock.tryAcquireLock('123', LOCK1, 3000); // false

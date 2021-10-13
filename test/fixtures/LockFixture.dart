@@ -6,13 +6,11 @@ final LOCK2 = 'lock_2';
 final LOCK3 = 'lock_3';
 
 class LockFixture {
-  ILock _lock;
+  final ILock _lock;
 
-  LockFixture(ILock lock) {
-    _lock = lock;
-  }
+  LockFixture(ILock lock) : _lock = lock;
 
-  void testTryAcquireLock() async {
+  Future testTryAcquireLock() async {
     // Try to acquire lock for the first time
     var result = await _lock.tryAcquireLock('123', LOCK1, 3000);
     expect(result, isTrue);
@@ -31,7 +29,7 @@ class LockFixture {
     await _lock.releaseLock('123', LOCK1);
   }
 
-  void testAcquireLock() async {
+  Future testAcquireLock() async {
     // Acquire lock for the first time
     await _lock.acquireLock('123', LOCK2, 3000, 1000);
     // Acquire lock for the second time
@@ -52,7 +50,7 @@ class LockFixture {
     await _lock.releaseLock('123', LOCK2);
   }
 
-  void testReleaseLock() async {
+  Future testReleaseLock() async {
     // Acquire lock for the first time
     var result = await _lock.tryAcquireLock('123', LOCK3, 3000);
     expect(result, isTrue);

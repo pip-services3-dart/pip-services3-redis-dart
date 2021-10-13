@@ -7,8 +7,8 @@ import '../fixtures/CacheFixture.dart';
 
 void main() {
   group('RedisCache', () {
-    RedisCache _cache;
-    CacheFixture _fixture;
+    late RedisCache _cache;
+    late CacheFixture _fixture;
 
     setUp(() async {
       var host = Platform.environment['REDIS_SERVICE_HOST'] ?? 'localhost';

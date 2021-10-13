@@ -7,8 +7,8 @@ import '../fixtures/LockFixture.dart';
 
 void main() {
   group('RedisLock', () {
-    RedisLock _lock;
-    LockFixture _fixture;
+    late RedisLock _lock;
+    late LockFixture _fixture;
 
     setUp(() async {
       var host = Platform.environment['REDIS_SERVICE_HOST'] ?? 'localhost';
