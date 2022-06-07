@@ -1,6 +1,6 @@
 {
-    "name": "pip-services-redis",
-    "registry": "pipdevs",
+    "name": "pip_services3_redis",
+    "registry": "github.com/pip-services3-dart",
     "version": "1.1.0",
     "build": "0"
 }
